@@ -239,7 +239,9 @@ async function startOffer() {
 }
 
 function createPeerConnection() {
-  const connection = new RTCPeerConnection({ iceServers: [] });
+  const connection = new RTCPeerConnection({
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  });
   connection.addEventListener('icecandidate', ({ candidate }) => {
     if (candidate)
       sendSignal('candidate', candidate);
@@ -254,7 +256,7 @@ function createPeerConnection() {
     if (connection.connectionState === 'connected')
       stateLabel.textContent = 'Live video connected.';
     else if (connection.connectionState === 'failed')
-      stateLabel.textContent = 'WebRTC connection failed. Check that both devices are on the same Wi-Fi.';
+      stateLabel.textContent = 'WebRTC connection failed. Check Wi-Fi/mobile data or add a TURN server.';
   });
   return connection;
 }
