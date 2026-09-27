@@ -126,7 +126,9 @@ async function connectSignaling() {
   const supabase = createClient(PHONEOBS_CONFIG.supabaseUrl, PHONEOBS_CONFIG.supabaseAnonKey);
   signalingChannel = supabase.channel(`phoneobs:${session}`, { config: { broadcast: { self: false } } });
   signalingChannel.on('broadcast', { event: 'signal' }, ({ payload }) => handleSignal(payload));
-  const status = await signalingChannel.subscribe();
+  const status = await new Promise((resolve) => {
+    signalingChannel.subscribe(resolve);
+  });
   if (status !== 'SUBSCRIBED') {
     stateLabel.textContent = 'Could not connect to Supabase Realtime.';
     return;
