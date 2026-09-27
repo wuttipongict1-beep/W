@@ -9,8 +9,10 @@ const session = params.get('session');
 const token = params.get('token') || '';
 const video = document.querySelector('#preview');
 const stateLabel = document.querySelector('#connection-state');
+const cameraSelect = document.querySelector('#camera');
 const resolutionSelect = document.querySelector('#resolution');
 const actualResolution = document.querySelector('#actual-resolution');
+const copyViewerButton = document.querySelector('#copy-viewer-link');
 const pendingCandidates = [];
 let peerConnection;
 let mediaStream;
@@ -29,24 +31,32 @@ if (role === 'receiver') {
   document.querySelector('#camera-controls').hidden = true;
   video.muted = true;
 } else {
+  copyViewerButton.addEventListener('click', async () => {
+    const viewerUrl = new URL(location.href);
+    viewerUrl.searchParams.set('role', 'receiver');
+    await navigator.clipboard.writeText(viewerUrl.href);
+    copyViewerButton.textContent = 'Viewer link copied';
+  });
   await startPhoneCamera();
 }
 
 if (role === 'receiver' || mediaStream)
   connectSignaling();
 
-async function startPhoneCamera() {
+async function startPhoneCamera(deviceId) {
   if (!navigator.mediaDevices?.getUserMedia) {
     stateLabel.textContent = 'Camera access requires a trusted HTTPS connection.';
     return;
   }
 
   try {
+    mediaStream?.getTracks().forEach((track) => track.stop());
     mediaStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' } },
+      video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: { ideal: 'environment' } },
       audio: false,
     });
     video.srcObject = mediaStream;
+    await populateCameras();
     await populateResolutions(mediaStream.getVideoTracks()[0]);
     updateActualResolution();
     mediaStream.getVideoTracks()[0].addEventListener('unmute', updateActualResolution);
@@ -54,6 +64,26 @@ async function startPhoneCamera() {
   } catch (error) {
     stateLabel.textContent = `Could not open camera: ${error.message}`;
   }
+}
+
+async function populateCameras() {
+  const devices = (await navigator.mediaDevices.enumerateDevices())
+    .filter((device) => device.kind === 'videoinput');
+  cameraSelect.replaceChildren(...devices.map((device, index) => {
+    const option = document.createElement('option');
+    option.value = device.deviceId;
+    option.textContent = device.label || `Camera ${index + 1}`;
+    return option;
+  }));
+  cameraSelect.value = mediaStream?.getVideoTracks()[0]?.getSettings().deviceId || devices[0]?.deviceId || '';
+  cameraSelect.disabled = devices.length < 2;
+  cameraSelect.onchange = async () => {
+    await startPhoneCamera(cameraSelect.value);
+    const sender = peerConnection?.getSenders().find((item) => item.track?.kind === 'video');
+    if (sender)
+      await sender.replaceTrack(mediaStream.getVideoTracks()[0]);
+    updateActualResolution();
+  };
 }
 
 async function populateResolutions(track) {

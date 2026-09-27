@@ -14,9 +14,12 @@
     </header>
     <video id="preview" autoplay playsinline muted></video>
     <section class="camera-controls" id="camera-controls">
+      <label for="camera">Camera</label>
+      <select id="camera" disabled></select>
       <label for="resolution">Resolution</label>
       <select id="resolution" disabled></select>
       <p id="actual-resolution">Waiting for camera permission</p>
+      <button type="button" id="copy-viewer-link">Copy viewer link</button>
     </section>
     <p class="connection-state" id="connection-state" role="status">Starting camera…</p>
   </main>
