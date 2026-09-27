@@ -1,28 +1,21 @@
 const slotsElement = document.querySelector('#slots');
 const notice = document.querySelector('#notice');
-const baseUrl = new URL('./camera.html', location.href);
-const sessions = JSON.parse(localStorage.getItem('phoneobs-sessions') || '{}');
+const sessions = JSON.parse(localStorage.getItem('phoneobs-vdo-rooms') || '{}');
 
 function sessionFor(slot) {
   if (!sessions[slot]) {
     sessions[slot] = crypto.randomUUID();
-    localStorage.setItem('phoneobs-sessions', JSON.stringify(sessions));
+    localStorage.setItem('phoneobs-vdo-rooms', JSON.stringify(sessions));
   }
   return sessions[slot];
 }
 
 function cameraUrl(slot) {
-  const url = new URL(baseUrl);
-  url.searchParams.set('slot', slot);
-  url.searchParams.set('role', 'phone');
-  url.searchParams.set('session', sessionFor(slot));
-  return url.href;
+  return `https://vdo.ninja/?push=${encodeURIComponent(sessionFor(slot))}&webcam=1`;
 }
 
 function viewerUrl(slot) {
-  const url = new URL(cameraUrl(slot));
-  url.searchParams.set('role', 'receiver');
-  return url.href;
+  return `https://vdo.ninja/?view=${encodeURIComponent(sessionFor(slot))}&cleanoutput=1`;
 }
 
 function makeLink(label, href) {
@@ -34,6 +27,18 @@ function makeLink(label, href) {
   return link;
 }
 
+function makeCopyButton(label, href) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = label;
+  button.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(href);
+    button.textContent = 'Copied';
+    setTimeout(() => { button.textContent = label; }, 1500);
+  });
+  return button;
+}
+
 for (const slot of [1, 2, 3, 4]) {
   const card = document.createElement('article');
   card.className = 'slot';
@@ -42,15 +47,7 @@ for (const slot of [1, 2, 3, 4]) {
   const phoneLink = makeLink('Open camera on phone', cameraUrl(slot));
   const viewer = viewerUrl(slot);
   const viewerLink = makeLink('Open viewer', viewer);
-  const copyButton = document.createElement('button');
-  copyButton.type = 'button';
-  copyButton.textContent = 'Copy viewer link';
-  copyButton.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(viewer);
-    copyButton.textContent = 'Copied';
-    setTimeout(() => { copyButton.textContent = 'Copy viewer link'; }, 1500);
-  });
-  card.append(heading, phoneLink, viewerLink, copyButton);
+  card.append(heading, phoneLink, makeCopyButton('Copy camera link', cameraUrl(slot)), viewerLink, makeCopyButton('Copy viewer link', viewer));
   slotsElement.append(card);
 }
 

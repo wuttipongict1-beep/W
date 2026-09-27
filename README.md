@@ -27,6 +27,14 @@ The phone and OBS browser must both use the HTTPS GitHub Pages URL. For phones
 and OBS on the same network, the default WebRTC ICE configuration is usually
 enough. Remote networks may require a TURN server.
 
+## Simple VDO.Ninja mode
+
+The dashboard now uses VDO.Ninja for the media connection. It creates one
+`push` link for the phone and one matching `view` link for OBS per slot. This
+avoids maintaining a custom signaling and TURN service. Open the camera link
+on the phone, allow camera access, then paste the matching viewer link into an
+OBS Browser Source.
+
 ## Phone pairing server
 
 Install Node.js 20 or newer and [mkcert](https://github.com/FiloSottile/mkcert), then trust a local certificate authority on the phone. On the PC, find its Wi-Fi IPv4 address and run:
