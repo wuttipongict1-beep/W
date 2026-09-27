@@ -1,0 +1,6 @@
+build/
+server/node_modules/
+server/certs/
+.env
+/cert.pem
+/key.pem

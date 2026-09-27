@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PhoneOBS Pairing</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="dashboard">
+  <main class="dashboard-shell">
+    <header class="dashboard-title">
+      <div>
+        <span class="wordmark">PHONEOBS / LIVE SETUP</span>
+        <h1>Pair phone cameras</h1>
+        <p>Open a camera link on your phone, then paste the viewer link into OBS Browser Source.</p>
+      </div>
+    </header>
+    <p class="notice" id="notice" hidden></p>
+    <section class="slots" id="slots" aria-live="polite"></section>
+  </main>
+  <script type="module" src="./dashboard.js"></script>
+</body>
+</html>
